@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>제주 여행 일정 플래너 (10/21 - 10/25)</title>
+        <style>
+            :root {
+                --primary: #ff6b4a;
+                --secondary: #2563eb;
+                --bg: #f8fafc;
+                --card-bg: #ffffff;
+                --text: #0f172a;
+                --text-sub: #64748b;
+                --border: #e2e8f0;
+                --completed: #94a3b8;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            }
+
+            body {
+                background-color: var(--bg);
+                color: var(--text);
+                line-height: 1.5;
+                padding: 16px;
+                max-width: 500px;
+                margin: 0 auto;
+                padding-bottom: 40px;
+            }
+
+            .app-header {
+                text-align: center;
+                padding: 12px 0 16px;
+            }
+
+            .app-header h1 {
+                font-size: 1.4rem;
+                font-weight: 800;
+                color: var(--text);
+            }
+
+            .app-header p {
+                font-size: 0.85rem;
+                color: var(--text-sub);
+                margin-top: 2px;
+            }
+
+            .tabs-wrapper {
+                overflow-x: auto;
+                white-space: nowrap;
+                margin-bottom: 16px;
+                padding-bottom: 4px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tabs {
+                display: inline-flex;
+                gap: 6px;
+                background: #e2e8f0;
+                padding: 4px;
+                border-radius: 12px;
+                width: 100%;
+            }
+
+            .tab-btn {
+                flex: 1;
+                padding: 10px 6px;
+                border: none;
+                background: transparent;
+                color: var(--text-sub);
+                font-weight: 700;
+                font-size: 0.78rem;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                text-align: center;
+            }
+
+            .tab-btn.active {
+                background: white;
+                color: var(--primary);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            }
+
+            .tab-content {
+                display: none;
+            }
+
+            .tab-content.active {
+                display: block;
+            }
+
+            .hotel-banner {
+                background-color: #eff6ff;
+                border: 1px solid #bfdbfe;
+                border-radius: 12px;
+                padding: 10px 14px;
+                font-size: 0.82rem;
+                color: #1e40af;
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .hotel-banner strong {
+                font-weight: 700;
+            }
+
+            .timeline {
+                position: relative;
+                padding-left: 16px;
+            }
+
+            .timeline::before {
+                content: "";
+                position: absolute;
+                left: 5px;
+                top: 14px;
+                bottom: 14px;
+                width: 2px;
+                background-color: #cbd5e1;
+            }
+
+            .card {
+                position: relative;
+                background: var(--card-bg);
+                border-radius: 12px;
+                padding: 14px;
+                margin-bottom: 12px;
+                border: 1px solid var(--border);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+                display: flex;
+                gap: 12px;
+                align-items: flex-start;
+                transition: all 0.2s ease;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .card::before {
+                content: "";
+                position: absolute;
+                left: -16px;
+                top: 20px;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: var(--secondary);
+                border: 2px solid var(--bg);
+            }
+
+            .card.highlight::before {
+                background-color: var(--primary);
+            }
+
+            .todo-check {
+                appearance: none;
+                -webkit-appearance: none;
+                width: 22px;
+                height: 22px;
+                border: 2px solid #cbd5e1;
+                border-radius: 6px;
+                outline: none;
+                cursor: pointer;
+                margin-top: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                transition: all 0.2s;
+                pointer-events: none;
+            }
+
+            .todo-check:checked {
+                background-color: #03c75a;
+                border-color: #03c75a;
+            }
+
+            .todo-check:checked::after {
+                content: "✓";
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+            }
+
+            .card.completed {
+                background-color: #f1f5f9;
+                opacity: 0.65;
+            }
+
+            .card.completed .card-title,
+            .card.completed .card-desc {
+                text-decoration: line-through;
+                color: var(--completed);
+            }
+
+            .card-content {
+                flex: 1;
+            }
+
+            .card-time {
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: var(--secondary);
+                margin-bottom: 2px;
+            }
+
+            .card.highlight .card-time {
+                color: var(--primary);
+            }
+
+            .card-title {
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: var(--text);
+                margin-bottom: 4px;
+            }
+
+            .card-desc {
+                font-size: 0.82rem;
+                color: var(--text-sub);
+                line-height: 1.4;
+            }
+
+            .badge {
+                display: inline-block;
+                margin-top: 6px;
+                background-color: #f1f5f9;
+                color: #475569;
+                font-size: 0.7rem;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-weight: 600;
+            }
+
+            .badge-bakery {
+                background-color: #fef3c7;
+                color: #b45309;
+            }
+
+            .badge-tip {
+                background-color: #fce7f3;
+                color: #be185d;
+            }
+
+            .tip-box {
+                background: #f8fafc;
+                border-left: 3px solid var(--primary);
+                padding: 8px 10px;
+                margin-top: 8px;
+                font-size: 0.78rem;
+                color: #334155;
+                border-radius: 0 6px 6px 0;
+            }
+
+            .reset-btn {
+                display: block;
+                margin: 20px auto 0;
+                padding: 8px 16px;
+                background: #e2e8f0;
+                color: #64748b;
+                border: none;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            .reset-btn:active {
+                background: #cbd5e1;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="app-header">
+            <h1>✈️ 제주 여행 일정 체크리스트</h1>
+            <p>10/21(수) ~ 10/25(일) 세부 코스</p>
+        </header>
+
+        <div class="tabs-wrapper">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab('day1', event)">21일(수)</button>
+                <button class="tab-btn" onclick="openTab('day2', event)">22일(목)</button>
+                <button class="tab-btn" onclick="openTab('day3', event)">23일(금)</button>
+                <button class="tab-btn" onclick="openTab('day4', event)">24일(토)</button>
+                <button class="tab-btn" onclick="openTab('day5', event)">25일(일)</button>
+            </div>
+        </div>
+
+        <!-- 1일차: 10/21 (수) -->
+        <div id="day1" class="tab-content active">
+            <div class="hotel-banner">
+                <span>🏨 오늘의 숙소</span>
+                <strong>에메랄드호텔</strong>
+            </div>
+
+            <div class="timeline">
+                <div class="card highlight" data-id="day1-1" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">19:00</div>
+                        <div class="card-title">🛬 제주공항 도착</div>
+                        <div class="card-desc">제주 국제공항 입국 및 수하물 수령</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day1-2" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">19:30 이후</div>
+                        <div class="card-title">🏨 에메랄드호텔 체크인</div>
+                        <div class="card-desc">숙소 이동, 체크인 후 휴식</div>
+                        <div class="tip-box">💡 첫날은 이동 위주로 무리하지 않기!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2일차: 10/22 (목) -->
+        <div id="day2" class="tab-content">
+            <div class="hotel-banner">
+                <span>🏨 오늘의 숙소</span>
+                <strong>타마라 제주</strong>
+            </div>
+
+            <div class="timeline">
+                <div class="card" data-id="day2-1" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">09:00</div>
+                        <div class="card-title">🏨 에메랄드호텔 체크아웃</div>
+                        <div class="card-desc">아침 짐 정리 및 체크아웃</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day2-2" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">09:10</div>
+                        <div class="card-title">🍱 다정이네김밥 포장</div>
+                        <div class="card-desc">이동 중 먹을 김밥 픽업</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day2-3" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">09:25</div>
+                        <div class="card-title">🌊 용두암 & 용연구름다리</div>
+                        <div class="card-desc">제주시관광안내센터에 짐 맡기기</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day2-4" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">10:50 ~ 11:00</div>
+                        <div class="card-title">🚗 렌터카 인수하러 택시타고 출발</div>
+                        <div class="card-desc">차량 상태 점검 및 11:00 정각 출발</div>
+                        <span class="badge">시간 딱 맞춤</span>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day2-5" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">점심</div>
+                        <div class="card-title">🍜 자매국수</div>
+                        <div class="card-desc">제주 대표 고기국수 점심 식사</div>
+                        <div class="tip-box">💡 이동 중 캐치테이블 미리 예약 필수!</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day2-6" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">디저트</div>
+                        <div class="card-title">🥐 픽업카페 애월점</div>
+                        <div class="card-desc">갓 나온 소금빵 테이크아웃</div>
+                        <span class="badge badge-bakery">소금빵 필수 포장</span>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day2-7" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">오후</div>
+                        <div class="card-title">🌳 한림공원 (선택: 성이시돌목장)</div>
+                        <div class="card-desc">공원 산책 및 목장 구경</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day2-8" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">저녁</div>
+                        <div class="card-title">🥩 돈블랙 서귀포본점</div>
+                        <div class="card-desc">서귀포 맛집에서 흑돼지 구이 저녁 식사</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day2-9" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">복귀</div>
+                        <div class="card-title">🏨 타마라 제주 체크인</div>
+                        <div class="card-desc">숙소 도착 후 일과 마감</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3일차: 10/23 (금) -->
+        <div id="day3" class="tab-content">
+            <div class="hotel-banner">
+                <span>🏨 오늘의 숙소</span>
+                <strong>타마라 제주</strong>
+            </div>
+
+            <div class="timeline">
+                <div class="card" data-id="day3-1" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">오전</div>
+                        <div class="card-title">🍳 호텔 조식</div>
+                        <div class="card-desc">타마라 제주에서 아침 식사</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day3-2" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">오전</div>
+                        <div class="card-title">🚴 제주레일바이크</div>
+                        <div class="card-desc">동부 풍경 보며 레일바이크 체험</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day3-3" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">점심</div>
+                        <div class="card-title">🦑 소금바치순이네, 사람 너무 많으면 순덕이네</div>
+                        <div class="card-desc">시그니처 돌문어볶음 점심 식사</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day3-4" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">오후</div>
+                        <div class="card-title">🌾 산굼부리</div>
+                        <div class="card-desc">가을 억새밭 둘러보기 및 산책</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day3-5" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">카페/휴식</div>
+                        <div class="card-title">☕ 에이바우트커피 토평점</div>
+                        <div class="card-desc">서귀포 이동 중 커피 한 잔하며 편하게 휴식</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day3-6" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">18:00 ~</div>
+                        <div class="card-title">🧺 서귀포 매일올레시장</div>
+                        <div class="card-desc">시장 먹거리 구경 및 저녁 식사</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day3-7" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">19:30 ~ 20:30</div>
+                        <div class="card-title">🎆 새연교 야경 & 불꽃놀이</div>
+                        <div class="card-desc">20:00 정각 불꽃놀이 관람</div>
+                        <span class="badge badge-tip">19:30 사전 도착 권장</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4일차: 10/24 (토) -->
+        <div id="day4" class="tab-content">
+            <div class="hotel-banner">
+                <span>🏨 오늘의 숙소</span>
+                <strong>타마라 제주</strong>
+            </div>
+
+            <div class="timeline">
+                <div class="card highlight" data-id="day4-1" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">오전 (첫 타임)</div>
+                        <div class="card-title">🚣 쇠소깍 테우_예약필수</div>
+                        <div class="card-desc">예약한 첫 타임 이용으로 대기 없이 테우 탑승</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day4-2" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">이동 중 디저트</div>
+                        <div class="card-title">🥯 제주인화찐빵</div>
+                        <div class="card-desc">한라산소주 이동 길에 따끈한 찐빵 포장</div>
+                        <span class="badge badge-bakery">찐빵 테이크아웃</span>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day4-3" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">14:30</div>
+                        <div class="card-title">🍶 한라산소주 공장 견학</div>
+                        <div class="card-desc">투어 프로그램 참여 및 시음</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day4-4" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">오후</div>
+                        <div class="card-title">🍕 돌갱이네</div>
+                        <div class="card-desc">바삭한 해물파전 간식/점심</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day4-5" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">저녁 식사</div>
+                        <div class="card-title">🥘 산방산 순천미향</div>
+                        <div class="card-desc">갈치조림 또는 시그니처 제왕삼합 저녁 식사</div>
+                        <div class="tip-box">💡 라스트오더 19:00 / 영업종료 20:00 고려해서 방문!</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day4-6" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">일몰 시간</div>
+                        <div class="card-title">🌅 협재 · 금능 해변</div>
+                        <div class="card-desc">서부 해변에서 노을 감상 후 서귀포 복귀</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5일차: 10/25 (일) -->
+        <div id="day5" class="tab-content">
+            <div class="hotel-banner">
+                <span>🏨 오늘의 일정</span>
+                <strong>귀가 및 체크아웃</strong>
+            </div>
+
+            <div class="timeline">
+                <div class="card" data-id="day5-1" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">08:00 ~ 08:30</div>
+                        <div class="card-title">🏨 타마라 제주 체크아웃</div>
+                        <div class="card-desc">서귀포에서 제주시 방향 출발 준비</div>
+                        <div class="tip-box">💡 공항까지 이동시간 여유 있게 잡기!</div>
+                    </div>
+                </div>
+
+                <div class="card" data-id="day5-2" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">09:30 ~ 10:00</div>
+                        <div class="card-title">🚘 렌터카 반납</div>
+                        <div class="card-desc">차량 반납 및 공항 셔틀 탑승</div>
+                    </div>
+                </div>
+
+                <div class="card highlight" data-id="day5-3" onclick="toggleCard(this)">
+                    <input type="checkbox" class="todo-check" />
+                    <div class="card-content">
+                        <div class="card-time">11:00</div>
+                        <div class="card-title">🛫 제주 출발</div>
+                        <div class="card-desc">탑승 수속 후 집으로 출발</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="reset-btn" onclick="resetChecklist()">🔄 체크리스트 초기화</button>
+
+        <script>
+            const STORAGE_KEY = "jeju_trip_checklist";
+
+            // 페이지 로드 시 저장된 체크 상태 복원
+            document.addEventListener("DOMContentLoaded", () => {
+                loadSavedStates();
+            });
+
+            function openTab(tabId, e) {
+                const contents = document.querySelectorAll(".tab-content");
+                const buttons = document.querySelectorAll(".tab-btn");
+
+                contents.forEach((content) => content.classList.remove("active"));
+                buttons.forEach((button) => button.classList.remove("active"));
+
+                document.getElementById(tabId).classList.add("active");
+                if (e) e.currentTarget.classList.add("active");
+            }
+
+            // 카드 토글 및 저장
+            function toggleCard(card) {
+                const checkbox = card.querySelector(".todo-check");
+                const cardId = card.getAttribute("data-id");
+
+                checkbox.checked = !checkbox.checked;
+
+                if (checkbox.checked) {
+                    card.classList.add("completed");
+                } else {
+                    card.classList.remove("completed");
+                }
+
+                saveState(cardId, checkbox.checked);
+            }
+
+            // localStorage에 체크 상태 저장
+            function saveState(cardId, isChecked) {
+                const savedStates = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+                savedStates[cardId] = isChecked;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(savedStates));
+            }
+
+            // localStorage에서 체크 상태 읽어오기
+            function loadSavedStates() {
+                const savedStates = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+                document.querySelectorAll(".card").forEach((card) => {
+                    const cardId = card.getAttribute("data-id");
+                    if (cardId && savedStates[cardId]) {
+                        const checkbox = card.querySelector(".todo-check");
+                        checkbox.checked = true;
+                        card.classList.add("completed");
+                    }
+                });
+            }
+
+            // 전체 초기화 함수 (필요 시 하단 버튼 이용)
+            function resetChecklist() {
+                if (confirm("모든 체크 표시를 초기화할까요?")) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    document.querySelectorAll(".card").forEach((card) => {
+                        const checkbox = card.querySelector(".todo-check");
+                        checkbox.checked = false;
+                        card.classList.remove("completed");
+                    });
+                }
+            }
+        </script>
+    </body>
+</html>
